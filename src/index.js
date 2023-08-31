@@ -34,6 +34,19 @@ app.post('/', async (req, res) => {
   res.send("berhasil menambahkan rencana")
 })
 
+app.get('/getAll', async(req,res) =>{
+  const result = await model.find();
+  res.send(result)
+});
+
+app.get('/getByTitle', async(req,res) => {
+  const result = await model.find({
+    title:req.body.title
+  })
+
+  res.send(result)
+})
+
 app.listen(port, () => {
     console.log(`Server running at ${baseUrl}`);
 });
