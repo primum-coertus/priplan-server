@@ -1,0 +1,27 @@
+{
+    "env": {
+        "browser": true,
+        "commonjs": true,
+        "es6": true
+    },
+    "ecmaFeatures": {
+        "modules": true
+    },
+    "plugins": [
+        "prettier"
+    ],
+    "extends": [
+        "airbnb-base",
+        "prettier",
+        "eslint:recommended"
+    ],
+    "parserOptions": {
+        "ecmaVersion": 14
+    },
+    "rules": {
+        "prettier/prettier": [
+            "error"
+        ],
+        "no-console": "warn"
+    }
+}
