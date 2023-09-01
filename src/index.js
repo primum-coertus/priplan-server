@@ -51,6 +51,38 @@ app.get('/getByTitle/:title', async (req, res) => {
   res.json(result);
 });
 
+app.get('/getById/:_id', async (req, res) => {
+  const result = await model.find({
+    _id:req.params._id
+  });
+
+  res.json(result);
+});
+
+app.delete('/deleteById', async (req, res) => {
+  await model.deleteMany({
+    _id:req.body._id
+  })
+  res.send("berhasil menghaspus plan " + req.body._id)
+})
+
+app.put('/update/:_id', async (req, res) => {
+  const updateDocument = {
+    $set:{
+      title:req.body.title,
+      plan:req.body.plan,
+      start_date:req.body.start_date,
+      end_date:req.body.end_date,
+      is_completed:req.body.is_completed
+    }
+  }
+
+  const filter = {_id : req.params._id }
+
+  await model.updateMany(filter, [updateDocument])
+  res.send("update plan dengan id " + req.params._id + " berhasil")
+})
+
 app.listen(port, () => {
   console.log(`Server running at ${baseUrl}`);
 });
