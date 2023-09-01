@@ -3,18 +3,18 @@ const mongoose = require('mongoose');
 module.exports = mongoose.model('plan', {
   title: {
     type: String,
-    require: true
+    required: true
   },
   plan: {
     type: String
   },
   start_date: {
     type: Date,
-    require: true
+    required: true
   },
   end_date: {
     type: Date,
-    require: true
+    required: true
   },
   is_completed: {
     type: Boolean,
