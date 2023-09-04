@@ -2,62 +2,244 @@ const model = require('./model');
 
 module.exports = {
   create: async (req, res) => {
-    const getTitle = req.body.title;
-    const getPlan = req.body.plan;
-    const getStart_date = req.body.start_date;
-    const getEnd_date = req.body.end_date;
-    const getIs_completed = req.body.is_completed;
-
+    const title = req.body.title;
+    const plan = req.body.plan;
+    const start_date = req.body.start_date;
+    const end_date = req.body.end_date;
+    const is_completed = req.body.is_completed;
     const planDocument = {
-      title: getTitle,
-      plan: getPlan,
-      start_date: getStart_date,
-      end_date: getEnd_date,
-      is_completed: getIs_completed
+      title,
+      plan,
+      start_date,
+      end_date,
+      is_completed
     };
 
-    await model.insertMany([planDocument]);
-    res.send('berhasil menambahkan rencana');
+    try {
+      await model.insertMany([planDocument]);
+      res.json({
+        statusCode: 201,
+        status: 'success',
+        message: 'Plan successfully created',
+        data: { ...planDocument }
+      });
+    } catch (err) {
+      res.json({
+        statusCode: 500,
+        status: 'error',
+        type: err.name,
+        message: err.message
+      });
+    }
   },
   getAll: async (req, res) => {
-    const result = await model.find();
-    res.json(result);
+    try {
+      const result = await model.find();
+
+      res.json({
+        statusCode: 200,
+        status: 'success',
+        message: `All plans (${result.length})`,
+        data: result
+      });
+    } catch (err) {
+      res.json({
+        statusCode: 500,
+        status: 'error',
+        type: err.name,
+        message: err.message
+      });
+    }
   },
   getByTitle: async (req, res) => {
-    const result = await model.find({
-      title: req.params.title
-    });
-    res.json(result);
+    const title = req.params.title;
+
+    try {
+      const result = await model.find({ title });
+
+      if (!result || !result.length) {
+        res.json({
+          statusCode: 404,
+          status: 'error',
+          type: 'NotFound',
+          message: `Plan with title: ${title} doesn't exists`
+        });
+      }
+
+      res.json({
+        statusCode: 200,
+        status: 'success',
+        message: `Title: ${title}`,
+        data: result
+      });
+    } catch (err) {
+      res.json({
+        statusCode: 500,
+        status: 'error',
+        type: err.name,
+        message: err.message
+      });
+    }
   },
   getById: async (req, res) => {
-    const result = await model.find({
-      _id: req.params._id
-    });
-    res.json(result);
+    const id = req.params._id;
+
+    try {
+      const result = await model.findById(id);
+
+      if (!result) {
+        res.json({
+          statusCode: 404,
+          status: 'error',
+          type: 'NotFound',
+          message: `Plan with id: ${id} doesn't exists`
+        });
+      }
+
+      res.json({
+        statusCode: 200,
+        status: 'success',
+        message: `Id: ${id}`,
+        data: result
+      });
+    } catch (err) {
+      let type = err.name;
+      let statusCode = 500;
+      let message = err.message;
+
+      if (type === 'CastError') {
+        statusCode = 404;
+        type = 'NotFound';
+        message = `Plan with id: ${id} doesn't exists`;
+      }
+
+      res.json({
+        statusCode,
+        status: 'error',
+        type,
+        message
+      });
+    }
   },
   deleteById: async (req, res) => {
-    await model.deleteMany({
-      _id: req.params._id
-    });
-    res.send(`berhasil menghaspus plan ${req.body._id}`);
+    const id = req.params._id;
+
+    try {
+      const result = await model.findByIdAndDelete(id);
+
+      if (!result) {
+        res.json({
+          statusCode: 404,
+          status: 'error',
+          type: 'NotFound',
+          message: `Plan with id: ${id} doesn't exists`
+        });
+      }
+
+      res.json({
+        statusCode: 200,
+        status: 'success',
+        message: `Plan with id: ${id} successfully deleted`,
+        data: result
+      });
+    } catch (err) {
+      let type = err.name;
+      let statusCode = 500;
+      let message = err.message;
+
+      if (type === 'CastError') {
+        statusCode = 404;
+        type = 'NotFound';
+        message = `Plan with id: ${id} doesn't exists`;
+      }
+
+      res.json({
+        statusCode,
+        status: 'error',
+        type,
+        message
+      });
+    }
   },
   updateById: async (req, res) => {
-    const updateDocument = {
-      $set: {
-        title: req.body.title,
-        plan: req.body.plan,
-        start_date: req.body.start_date,
-        end_date: req.body.end_date,
-        is_completed: req.body.is_completed
+    const id = req.params._id;
+
+    try {
+      const result = await model.findById(id);
+
+      if (!result) {
+        res.json({
+          statusCode: 404,
+          status: 'error',
+          type: 'NotFound',
+          message: `Plan with id: ${id} doesn't exists`
+        });
       }
-    };
 
-    const filter = { _id: req.params._id };
+      const { title, plan, start_date, end_date, is_completed } = req.body;
+      const before = {};
+      const $set = {};
 
-    await model.updateMany(filter, [updateDocument]);
-    res.send(`update plan dengan id ${req.params._id} berhasil`);
+      if (title) {
+        before['title'] = result.title;
+        $set['title'] = title;
+      }
+
+      if (plan) {
+        before['plan'] = result.plan;
+        $set['plan'] = plan;
+      }
+
+      if (start_date) {
+        before['start_date'] = result.start_date;
+        $set['start_date'] = start_date;
+      }
+
+      if (end_date) {
+        before['end_date'] = result.end_date;
+        $set['end_date'] = end_date;
+      }
+
+      if (is_completed) {
+        before['is_completed'] = result.is_completed;
+        $set['is_completed'] = is_completed;
+      }
+
+      await model.findByIdAndUpdate(id, { $set });
+
+      res.json({
+        statusCode: 200,
+        status: 'success',
+        message: `Plan with id: ${id} successfully updated`,
+        data: {
+          before,
+          after: $set
+        }
+      });
+    } catch (err) {
+      let type = err.name;
+      let statusCode = 500;
+      let message = err.message;
+
+      if (type === 'CastError') {
+        statusCode = 404;
+        type = 'NotFound';
+        message = `Plan with id: ${id} doesn't exists`;
+      }
+
+      res.json({
+        statusCode,
+        status: 'error',
+        type,
+        message
+      });
+    }
   },
   getRoot: (req, res) => {
-    res.send('Selamat datang di PriPlan API');
+    res.json({
+      statusCode: 200,
+      status: 'success',
+      message: 'Welcome to PriPlan API'
+    });
   }
 };
