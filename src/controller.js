@@ -51,6 +51,31 @@ module.exports = {
       });
     }
   },
+  getToday: async (req, res) => {
+    try {
+      const result = await model.find();
+
+      const today = new Date();
+      const todayResult = result.filter(plan => {
+        const endDate = new Date(plan.end_date);
+        return endDate.toLocaleDateString() === today.toLocaleDateString();
+      });
+
+      res.json({
+        statusCode: 200,
+        status: 'success',
+        message: `Today plans (${todayResult.length})`,
+        data: todayResult
+      });
+    } catch (err) {
+      res.json({
+        statusCode: 500,
+        status: 'error',
+        type: err.name,
+        message: err.message
+      });
+    }
+  },
   getByTitle: async (req, res) => {
     const title = req.params.title;
 
