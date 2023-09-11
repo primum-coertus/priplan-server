@@ -260,6 +260,59 @@ module.exports = {
       });
     }
   },
+  toggleIsCompletedById: async (req, res) => {
+    const id = req.params._id;
+
+    try {
+      const result = await model.findById(id);
+
+      if (!result) {
+        res.json({
+          statusCode: 404,
+          status: 'error',
+          type: 'NotFound',
+          message: `Plan with id: ${id} doesn't exists`
+        });
+      }
+
+      await model.findByIdAndUpdate(id, {
+        $set: {
+          is_completed: !result.is_completed
+        }
+      });
+
+      res.json({
+        statusCode: 200,
+        status: 'success',
+        message: `Plan with id: ${id} successfully updated`,
+        data: {
+          before: {
+            is_completed: result.is_completed
+          },
+          after: {
+            is_completed: !result.is_completed
+          }
+        }
+      });
+    } catch (err) {
+      let type = err.name;
+      let statusCode = 500;
+      let message = err.message;
+
+      if (type === 'CastError') {
+        statusCode = 404;
+        type = 'NotFound';
+        message = `Plan with id: ${id} doesn't exists`;
+      }
+
+      res.json({
+        statusCode,
+        status: 'error',
+        type,
+        message
+      });
+    }
+  },
   getRoot: (req, res) => {
     res.json({
       statusCode: 200,
