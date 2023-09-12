@@ -76,6 +76,42 @@ module.exports = {
       });
     }
   },
+  getUpcoming: async (req, res) => {
+    try {
+      const result = await model.find();
+
+      const today = new Date();
+      const upComingResult = result
+        .filter(plan => {
+          const endDate = new Date(plan.end_date);
+          return (
+            endDate.getYear() >= today.getYear() &&
+            endDate.getMonth() >= today.getMonth() &&
+            endDate.getDate() > today.getDate()
+          );
+        })
+        .sort((a, b) => {
+          return (
+            new Date(a.end_date).getTime() - new Date(b.end_date).getTime()
+          );
+        })
+        .slice(0, 4);
+
+      res.json({
+        statusCode: 200,
+        status: 'success',
+        message: `Upcoming plans (${upComingResult.length})`,
+        data: upComingResult
+      });
+    } catch (err) {
+      res.json({
+        statusCode: 500,
+        status: 'error',
+        type: err.name,
+        message: err.message
+      });
+    }
+  },
   getByTitle: async (req, res) => {
     const title = req.params.title;
 
