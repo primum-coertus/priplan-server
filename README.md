@@ -14,7 +14,13 @@
    $ npm -v
    ```
 
-3. [Git](https://git-scm.com/)
+3. [Redis](https://redis.io/)
+
+   ```bash
+   $ redis-server -v
+   ```
+
+4. [Git](https://git-scm.com/)
 
    ```bash
    $ git --version

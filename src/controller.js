@@ -1,4 +1,8 @@
+const { Redis } = require('ioredis');
 const model = require('./model');
+const { cacheTodayPlan, cacheUpcomingPlan } = require('./helper');
+
+const redis = new Redis();
 
 module.exports = {
   create: async (req, res) => {
@@ -17,6 +21,9 @@ module.exports = {
 
     try {
       await model.insertMany([planDocument]);
+      await cacheTodayPlan(model);
+      await cacheUpcomingPlan(model);
+
       res.json({
         statusCode: 201,
         status: 'success',
@@ -32,40 +39,23 @@ module.exports = {
       });
     }
   },
-  getAll: async (req, res) => {
-    try {
-      const result = await model.find();
 
-      res.json({
-        statusCode: 200,
-        status: 'success',
-        message: `All plans (${result.length})`,
-        data: result
-      });
-    } catch (err) {
-      res.json({
-        statusCode: 500,
-        status: 'error',
-        type: err.name,
-        message: err.message
-      });
-    }
-  },
   getToday: async (req, res) => {
     try {
-      const result = await model.find();
+      const plans = await model.find();
 
       const today = new Date();
-      const todayResult = result.filter(plan => {
+      const todayPlans = plans.filter(plan => {
         const endDate = new Date(plan.end_date);
         return endDate.toLocaleDateString() === today.toLocaleDateString();
       });
+      await cacheTodayPlan(model);
 
       res.json({
         statusCode: 200,
         status: 'success',
-        message: `Today plans (${todayResult.length})`,
-        data: todayResult
+        message: `Today plans (${todayPlans.length})`,
+        data: todayPlans
       });
     } catch (err) {
       res.json({
@@ -78,10 +68,9 @@ module.exports = {
   },
   getUpcoming: async (req, res) => {
     try {
-      const result = await model.find();
-
+      const plans = await model.find();
       const today = new Date();
-      const upComingResult = result
+      const upcomingPlans = plans
         .filter(plan => {
           const endDate = new Date(plan.end_date);
           return (
@@ -96,12 +85,13 @@ module.exports = {
           );
         })
         .slice(0, 4);
+      await cacheUpcomingPlan(model);
 
       res.json({
         statusCode: 200,
         status: 'success',
-        message: `Upcoming plans (${upComingResult.length})`,
-        data: upComingResult
+        message: `Upcoming plans (${upcomingPlans.length})`,
+        data: upcomingPlans
       });
     } catch (err) {
       res.json({
@@ -109,76 +99,6 @@ module.exports = {
         status: 'error',
         type: err.name,
         message: err.message
-      });
-    }
-  },
-  getByTitle: async (req, res) => {
-    const title = req.params.title;
-
-    try {
-      const result = await model.find({ title });
-
-      if (!result || !result.length) {
-        res.json({
-          statusCode: 404,
-          status: 'error',
-          type: 'NotFound',
-          message: `Plan with title: ${title} doesn't exists`
-        });
-      }
-
-      res.json({
-        statusCode: 200,
-        status: 'success',
-        message: `Title: ${title}`,
-        data: result
-      });
-    } catch (err) {
-      res.json({
-        statusCode: 500,
-        status: 'error',
-        type: err.name,
-        message: err.message
-      });
-    }
-  },
-  getById: async (req, res) => {
-    const id = req.params._id;
-
-    try {
-      const result = await model.findById(id);
-
-      if (!result) {
-        res.json({
-          statusCode: 404,
-          status: 'error',
-          type: 'NotFound',
-          message: `Plan with id: ${id} doesn't exists`
-        });
-      }
-
-      res.json({
-        statusCode: 200,
-        status: 'success',
-        message: `Id: ${id}`,
-        data: result
-      });
-    } catch (err) {
-      let type = err.name;
-      let statusCode = 500;
-      let message = err.message;
-
-      if (type === 'CastError') {
-        statusCode = 404;
-        type = 'NotFound';
-        message = `Plan with id: ${id} doesn't exists`;
-      }
-
-      res.json({
-        statusCode,
-        status: 'error',
-        type,
-        message
       });
     }
   },
@@ -186,9 +106,11 @@ module.exports = {
     const id = req.params._id;
 
     try {
-      const result = await model.findByIdAndDelete(id);
+      const plan = await model.findByIdAndDelete(id);
+      await redis.del('get_today');
+      await redis.del('get_upcoming');
 
-      if (!result) {
+      if (!plan) {
         res.json({
           statusCode: 404,
           status: 'error',
@@ -201,7 +123,7 @@ module.exports = {
         statusCode: 200,
         status: 'success',
         message: `Plan with id: ${id} successfully deleted`,
-        data: result
+        data: plan
       });
     } catch (err) {
       let type = err.name;
@@ -222,87 +144,14 @@ module.exports = {
       });
     }
   },
-  updateById: async (req, res) => {
-    const id = req.params._id;
 
-    try {
-      const result = await model.findById(id);
-
-      if (!result) {
-        res.json({
-          statusCode: 404,
-          status: 'error',
-          type: 'NotFound',
-          message: `Plan with id: ${id} doesn't exists`
-        });
-      }
-
-      const { title, plan, start_date, end_date, is_completed } = req.body;
-      const before = {};
-      const $set = {};
-
-      if (title) {
-        before['title'] = result.title;
-        $set['title'] = title;
-      }
-
-      if (plan) {
-        before['plan'] = result.plan;
-        $set['plan'] = plan;
-      }
-
-      if (start_date) {
-        before['start_date'] = result.start_date;
-        $set['start_date'] = start_date;
-      }
-
-      if (end_date) {
-        before['end_date'] = result.end_date;
-        $set['end_date'] = end_date;
-      }
-
-      if (is_completed) {
-        before['is_completed'] = result.is_completed;
-        $set['is_completed'] = is_completed;
-      }
-
-      await model.findByIdAndUpdate(id, { $set });
-
-      res.json({
-        statusCode: 200,
-        status: 'success',
-        message: `Plan with id: ${id} successfully updated`,
-        data: {
-          before,
-          after: $set
-        }
-      });
-    } catch (err) {
-      let type = err.name;
-      let statusCode = 500;
-      let message = err.message;
-
-      if (type === 'CastError') {
-        statusCode = 404;
-        type = 'NotFound';
-        message = `Plan with id: ${id} doesn't exists`;
-      }
-
-      res.json({
-        statusCode,
-        status: 'error',
-        type,
-        message
-      });
-    }
-  },
   toggleIsCompletedById: async (req, res) => {
     const id = req.params._id;
 
     try {
-      const result = await model.findById(id);
+      const plan = await model.findById(id);
 
-      if (!result) {
+      if (!plan) {
         res.json({
           statusCode: 404,
           status: 'error',
@@ -313,9 +162,11 @@ module.exports = {
 
       await model.findByIdAndUpdate(id, {
         $set: {
-          is_completed: !result.is_completed
+          is_completed: !plan.is_completed
         }
       });
+      await cacheTodayPlan(model);
+      await cacheUpcomingPlan(model);
 
       res.json({
         statusCode: 200,
@@ -323,10 +174,10 @@ module.exports = {
         message: `Plan with id: ${id} successfully updated`,
         data: {
           before: {
-            is_completed: result.is_completed
+            is_completed: plan.is_completed
           },
           after: {
-            is_completed: !result.is_completed
+            is_completed: !plan.is_completed
           }
         }
       });
