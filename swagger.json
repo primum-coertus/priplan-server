@@ -1,0 +1,351 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SecondHand API",
+    "description": "Backend API for SecondHand website",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3001",
+      "description": "Local server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Plan",
+      "description": "Plan CRUD Operations"
+    }
+  ],
+  "paths": {
+    "/create": {
+      "post": {
+        "tags": ["Plan"],
+        "summary": "Create New Plan",
+        "operationId": "create",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "encoding": {},
+              "schema": {
+                "required": ["title", "start_date", "end_date"],
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "example": "RLCraft"
+                  },
+                  "start_date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2023-09-21 19:00:00"
+                  },
+                  "end_date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2023-09-21 19:00:00"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Plan successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/responses/GetPlan"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/responses/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/getToday": {
+      "get": {
+        "tags": ["Plan"],
+        "summary": "Get Today Plan(s)",
+        "operationId": "get-today",
+        "responses": {
+          "200": {
+            "description": "Today plans (n)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/responses/GetPlans"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/responses/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/getUpcoming": {
+      "get": {
+        "tags": ["Plan"],
+        "summary": "Get Upcoming Plan(s)",
+        "operationId": "get-upcoming",
+        "responses": {
+          "200": {
+            "description": "Upcoming plans (n)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/responses/GetPlans"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/responses/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toggleIsCompletedById/{_id}": {
+      "put": {
+        "tags": ["Plan"],
+        "summary": "Toggle is completed field by id",
+        "operationId": "plan-toggle-is-completed",
+        "parameters": [
+          {
+            "name": "_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "650c1c3356df17f49c555b9c"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Plan with id: ${id} successfully updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/responses/ToggleIsCompleted"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/responses/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/responses/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/deleteById/{_id}": {
+      "delete": {
+        "tags": ["Plan"],
+        "summary": "Delete plan by id",
+        "operationId": "plan-delete",
+        "parameters": [
+          {
+            "name": "_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "650c1c3356df17f49c555b9c"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Plan with id: {_id} successfully deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/responses/GetPlan"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/responses/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/responses/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Plan": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "plan": {
+            "type": "string"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "is_completed": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "responses": {
+      "GetPlan": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string",
+            "example": "success"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Plan"
+          }
+        }
+      },
+      "GetPlans": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string",
+            "example": "success"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Plan"
+            }
+          }
+        }
+      },
+      "ToggleIsCompleted": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string",
+            "example": "success"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "before": {
+                "type": "boolean"
+              },
+              "after": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string",
+            "example": "error"
+          },
+          "type": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

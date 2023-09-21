@@ -39,7 +39,6 @@ module.exports = {
       });
     }
   },
-
   getToday: async (req, res) => {
     try {
       const plans = await model.find();
@@ -144,7 +143,6 @@ module.exports = {
       });
     }
   },
-
   toggleIsCompletedById: async (req, res) => {
     const id = req.params._id;
 
