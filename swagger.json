@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "SecondHand API",
-    "description": "Backend API for SecondHand website",
+    "title": "PriPlan Server",
+    "description": "Backend API for PriPlan website",
     "version": "1.0.0"
   },
   "servers": [
