@@ -57,7 +57,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/responses/GetPlan"
+                  "$ref": "#/components/schemas/GetPlan"
                 }
               }
             }
@@ -67,7 +67,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/responses/Error"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -86,7 +86,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/responses/GetPlans"
+                  "$ref": "#/components/schemas/GetPlans"
                 }
               }
             }
@@ -96,7 +96,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/responses/Error"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -115,7 +115,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/responses/GetPlans"
+                  "$ref": "#/components/schemas/GetPlans"
                 }
               }
             }
@@ -125,7 +125,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/responses/Error"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -155,7 +155,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/responses/ToggleIsCompleted"
+                  "$ref": "#/components/schemas/ToggleIsCompleted"
                 }
               }
             }
@@ -165,7 +165,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/responses/Error"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -175,7 +175,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/responses/Error"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -205,7 +205,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/responses/GetPlan"
+                  "$ref": "#/components/schemas/GetPlan"
                 }
               }
             }
@@ -215,7 +215,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/responses/Error"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -225,7 +225,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/responses/Error"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -240,29 +240,33 @@
         "type": "object",
         "properties": {
           "_id": {
-            "type": "string"
+            "type": "string",
+            "example": "650c1c3356df17f49c555b9c"
           },
           "title": {
-            "type": "string"
+            "type": "string",
+            "example": "RLCraft"
           },
           "plan": {
-            "type": "string"
+            "type": "string",
+            "example": "Playing RLCraft with Regbeh"
           },
           "start_date": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "example": "2023-09-21 19:00:00"
           },
           "end_date": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "example": "2023-09-21 19:00:00"
           },
           "is_completed": {
-            "type": "boolean"
+            "type": "boolean",
+            "example": false
           }
         }
-      }
-    },
-    "responses": {
+      },
       "GetPlan": {
         "type": "object",
         "properties": {
@@ -319,10 +323,12 @@
             "type": "object",
             "properties": {
               "before": {
-                "type": "boolean"
+                "type": "boolean",
+                "example": false
               },
               "after": {
-                "type": "boolean"
+                "type": "boolean",
+                "example": true
               }
             }
           }
